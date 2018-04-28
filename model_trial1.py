@@ -42,17 +42,17 @@ res=test[['aid','uid']]
 test=test.drop('label',axis=1)
 enc = OneHotEncoder()
 
-train_x = train[['consumptionAbility', 'education']]
+train_x = train[['consumptionAbility', 'education']]  #这两个原始特征直接加入训练数据集
 test_x = test[['consumptionAbility', 'education']]
-
+#数据归一化
 scaler = StandardScaler()
-scaler.fit(train['creativeSize'].reshape(-1, 1))
+scaler.fit(train['creativeSize'].reshape(-1, 1))  #用整个训练集的特征来fit
 scaler_train = scaler.transform(train['creativeSize'].reshape(-1, 1))
 scaler_test =  scaler.transform(test['creativeSize'].reshape(-1, 1))
 
-train_x = np.array(train_x)
+train_x = np.array(train_x) #转为numpy格式
 test_x = np.array(test_x)
-train_x = np.hstack((train_x, scaler_train))
+train_x = np.hstack((train_x, scaler_train)) #进行水平拼接
 test_x = np.hstack((test_x, scaler_test))
 
 oc_encoder = OneHotEncoder()
@@ -93,5 +93,5 @@ def LGB_predict(train_x, train_y, test_x, res):
 
 model = LGB_predict(train_x,train_y,test_x,res)
 
-joblib.dump(model, './datasets/model_trial1.model')
+joblib.dump(model, './datasets/model_trial1.model') #保存模型
 
