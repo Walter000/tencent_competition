@@ -1,7 +1,11 @@
 # coding=utf-8
-# @author:bryan
-# blog: https://blog.csdn.net/bryan__
-# github: https://github.com/YouChouNoBB/2018-tencent-ad-competition-baseline
+# @author:walter000
+# github: https://github.com/Walter000/tencent_competition
+
+"""
+ 在作者Baseline代码基础上增加了网格搜索，同时直接读取sparse格式的训练数据，最后保存预测的结果和最好的模型best_estimator,
+ 同时将feature_importance写入文件方面后期分析
+"""
 import pandas as pd
 import lightgbm as lgb
 import numpy as np
