@@ -1,3 +1,13 @@
+# coding=utf-8
+# @author:walter000
+# github: https://github.com/Walter000/tencent_competition
+
+"""
+ 保留作者Baseline的模型参数，训练数据中剔除了缺失率过高的特征: interest3, interest4, kw3, appIdInstall, appIdAction, topic3,
+ 同时保留原始ConsumeAbility和education的值不进行onehot处理，最终的结果为0.722423，未修改特征前提交结果为0.734404，精度损失
+ 大概为0.012，下一步考虑用随机森林来进行特征选取
+"""
+
 import numpy as np
 import pandas as pd
 import os

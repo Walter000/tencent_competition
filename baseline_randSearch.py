@@ -1,7 +1,11 @@
 # coding=utf-8
-# @author:bryan
-# blog: https://blog.csdn.net/bryan__
-# github: https://github.com/YouChouNoBB/2018-tencent-ad-competition-baseline
+# @author:walter000
+# github: https://github.com/Walter000/tencent_competition
+
+"""
+ 在作者Baseline代码基础上增加了随机搜索，同时直接读取sparse格式的训练数，并且直接读入训练标签，不用再次读入所有训练数据，
+ 最后保存预测的结果和最好的模型best_estimator, 同时将feature_importance写入文件方面后期分析
+"""
 import pandas as pd
 import lightgbm as lgb
 import numpy as np
@@ -33,9 +37,10 @@ import os
 #         user_feature.to_csv('./datasets/userFeature.csv', index=False)
 #
 # print('data preprocessing finish')
-train=pd.read_csv('./datasets/train.csv')
-predict=pd.read_csv('./datasets/test1.csv')
-train.loc[train['label']==-1,'label']=0
+# train = pd.read_csv('./datasets/train.csv')
+predict = pd.read_csv('./datasets/test1.csv')
+
+# train.loc[train['label']==-1,'label']=0
 # predict['label']=-1
 # data=pd.concat([train,predict])
 # data=pd.merge(data,ad_feature,on='aid',how='left')
@@ -55,7 +60,7 @@ train.loc[train['label']==-1,'label']=0
 #         data[feature] = LabelEncoder().fit_transform(data[feature])
 #
 # train=data[data.label!=-1]
-train_y = train.pop('label')
+# train_y = train.pop('label')
 # # train, test, train_y, test_y = train_test_split(train,train_y,test_size=0.2, random_state=2018)
 # test=data[data.label==-1]
 res = predict[['aid', 'uid']]
@@ -97,13 +102,15 @@ res = predict[['aid', 'uid']]
 print('start')
 train_x = sparse.load_npz('./datasets/train.npz')
 test_x = sparse.load_npz('./datasets/test.npz')
-
+train_y = pd.read_csv('./datasets/train_label.csv', names=['label'])  # 直接读入label文件，省去了读取train源文件时间
+train_y[train_y == -1] = 0
 clf = lgb.LGBMClassifier(
         boosting_type='gbdt', max_depth=-1, objective='binary',
         subsample=0.7, colsample_bytree=0.8, subsample_freq=1,
         learning_rate=0.05, random_state=2018, n_jobs=-1
     )
 
+# 网格搜索的参数空间
 params = {
     'n_estimators' : np.arange(1000, 8000, 1000),
     'num_leaves' : np.arange(30, 45, 2),
@@ -112,16 +119,17 @@ params = {
     'reg_lambda' : [0.2, 0.4, 0.8, 1],
 }
 
+# 迭代次数为10次，cv=5进行5折交叉验证，总共运行50轮
 rand_search = RandomizedSearchCV(clf, params, cv=5, n_iter=10, random_state=2018, verbose=2)
-rand_search.fit(train_x, train_y)
-best = rand_search.best_estimator_
-print(rand_search.best_params_)
+rand_search.fit(train_x, np.array(train_y).squeeze())
+best = rand_search.best_estimator_  # 获取最佳的模型
+print(rand_search.best_params_)  # 输出最佳模型的参数
 res['score'] = best.predict_proba(test_x)[:, 1]
 res['score'] = res['score'].apply(lambda x: float('%.6f' % x))
 res.to_csv('./datasets/submission4.csv', index=False)
-fea_imp = best.feature_importances_
+fea_imp = best.feature_importances_  # 输出最佳模型的特征重要性
 fea_imp = pd.Series(fea_imp)
-fea_imp.to_csv('./datasets/fea_imp.csv', index=False)
+fea_imp.to_csv('./datasets/fea_imp.csv', index=False)  # 保存至文件
 # def LGB_predict(train_x,train_y,test_x,res):
 #     print("LGB test")
 #     clf = lgb.LGBMClassifier(
