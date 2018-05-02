@@ -1,3 +1,12 @@
+# coding=utf-8
+# @author:walter000
+# github: https://github.com/Walter000/tencent_competition
+
+"""
+ 训练数据中剔除了缺失率过高的特征: interest3, interest4, kw3, appIdInstall, appIdAction, topic3, 同时将除了ct(上网类型)之外的
+ 特征进行相同的处理，额外增加了四个组合特征
+"""
+
 import numpy as np
 import pandas as pd
 import os
