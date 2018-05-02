@@ -1,3 +1,12 @@
+# coding=utf-8
+# @author:walter000
+# github: https://github.com/Walter000/tencent_competition
+
+"""
+ 训练数据中剔除了缺失率过高的特征: interest3, interest4, kw3, appIdInstall, appIdAction, topic3, 同时将除了ct(上网类型)之外的
+ 特征进行相同的处理，额外增加了四个组合特征
+"""
+
 import numpy as np
 import pandas as pd
 import os
@@ -69,8 +78,8 @@ data = pd.merge(data, num_advertise_touser, on=['aid'], how='left')
 
 print('开始加入推广计划转化率特征')
 
-num_campaign = train['campaignId'].value_counts()
-num_campaign_clicked = data_clicked['campaignId'].value_counts()
+num_campaign = train['campaignId'].value_counts().sort_index()
+num_campaign_clicked = data_clicked['campaignId'].value_counts().sort_index()
 ratio_num_campaign = num_campaign_clicked / num_campaign
 ratio_num_campaign = pd.DataFrame({
     'campaignId': ratio_num_campaign.index,
@@ -84,8 +93,8 @@ data = pd.merge(data, ratio_num_campaign, on=['campaignId'], how='left')
 
 print('开始加入学历所对应转化率特征')
 
-num_education = train['education'].value_counts()
-num_education_clicked = data_clicked['education'].value_counts()
+num_education = train['education'].value_counts().sort_index()
+num_education_clicked = data_clicked['education'].value_counts().sort_index()
 ration_num_education = num_education_clicked / num_education
 ration_num_education = pd.DataFrame({
     'education': ration_num_education.index,
@@ -94,7 +103,7 @@ ration_num_education = pd.DataFrame({
 data = pd.merge(data, ration_num_education, on=['education'], how='left')
 
 # 分离测试集
-
+train = data[data.label != -1]
 test = data[data.label == -1]
 res = test[['aid','uid']]
 test = test.drop('label', axis=1)
@@ -141,7 +150,7 @@ enc = OneHotEncoder()
 
 oc_encoder = OneHotEncoder()
 for feature in one_hot_feature:
-    oc_encoder.fit(train[feature].reshape(-1, 1))
+    oc_encoder.fit(data[feature].values.reshape(-1, 1))
     train_a=oc_encoder.transform(train[feature].values.reshape(-1, 1))
     test_a = oc_encoder.transform(test[feature].values.reshape(-1, 1))
     train_x = sparse.hstack((train_x, train_a))
@@ -152,13 +161,16 @@ print('one-hot prepared !')
 
 ct_encoder = CountVectorizer(min_df=0.001)
 for feature in vector_feature:
-    ct_encoder.fit(train[feature])
+    ct_encoder.fit(data[feature])
     train_a = ct_encoder.transform(train[feature])
     test_a = ct_encoder.transform(test[feature])
     train_x = sparse.hstack((train_x, train_a))
     test_x = sparse.hstack((test_x, test_a))
 print('cv prepared !')
-print('ths shape of train data:', test_x.shape)
+# print('ths shape of train data:', test_x.shape)
+
+sparse.save_npz('./datasets/model_fea_add1_train.npz', train_x)
+sparse.save_npz('./datasets/model_fea_add1_test.npz', test_x)
 
 
 def LGB_predict(train_x, train_y, test_x, res):
