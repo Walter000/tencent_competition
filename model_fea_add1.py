@@ -69,8 +69,13 @@ data = pd.merge(data, num_advertise_touser, on=['aid'], how='left')
 
 print('开始加入推广计划转化率特征')
 
+<<<<<<< HEAD
 num_campaign = train['campaignId'].value_counts().sort_index()
 num_campaign_clicked = data_clicked['campaignId'].value_counts().sort_index()
+=======
+num_campaign = train['campaignId'].value_counts()
+num_campaign_clicked = data_clicked['campaignId'].value_counts()
+>>>>>>> 3574f7ab1708cc0224501270cb18b95c2e374ed1
 ratio_num_campaign = num_campaign_clicked / num_campaign
 ratio_num_campaign = pd.DataFrame({
     'campaignId': ratio_num_campaign.index,
@@ -84,8 +89,13 @@ data = pd.merge(data, ratio_num_campaign, on=['campaignId'], how='left')
 
 print('开始加入学历所对应转化率特征')
 
+<<<<<<< HEAD
 num_education = train['education'].value_counts().sort_index()
 num_education_clicked = data_clicked['education'].value_counts().sort_index()
+=======
+num_education = train['education'].value_counts()
+num_education_clicked = data_clicked['education'].value_counts()
+>>>>>>> 3574f7ab1708cc0224501270cb18b95c2e374ed1
 ration_num_education = num_education_clicked / num_education
 ration_num_education = pd.DataFrame({
     'education': ration_num_education.index,
@@ -94,7 +104,11 @@ ration_num_education = pd.DataFrame({
 data = pd.merge(data, ration_num_education, on=['education'], how='left')
 
 # 分离测试集
+<<<<<<< HEAD
 train = data[data.label != -1]
+=======
+
+>>>>>>> 3574f7ab1708cc0224501270cb18b95c2e374ed1
 test = data[data.label == -1]
 res = test[['aid','uid']]
 test = test.drop('label', axis=1)
@@ -141,7 +155,11 @@ enc = OneHotEncoder()
 
 oc_encoder = OneHotEncoder()
 for feature in one_hot_feature:
+<<<<<<< HEAD
     oc_encoder.fit(data[feature].values.reshape(-1, 1))
+=======
+    oc_encoder.fit(train[feature].reshape(-1, 1))
+>>>>>>> 3574f7ab1708cc0224501270cb18b95c2e374ed1
     train_a=oc_encoder.transform(train[feature].values.reshape(-1, 1))
     test_a = oc_encoder.transform(test[feature].values.reshape(-1, 1))
     train_x = sparse.hstack((train_x, train_a))
@@ -152,16 +170,24 @@ print('one-hot prepared !')
 
 ct_encoder = CountVectorizer(min_df=0.001)
 for feature in vector_feature:
+<<<<<<< HEAD
     ct_encoder.fit(data[feature])
+=======
+    ct_encoder.fit(train[feature])
+>>>>>>> 3574f7ab1708cc0224501270cb18b95c2e374ed1
     train_a = ct_encoder.transform(train[feature])
     test_a = ct_encoder.transform(test[feature])
     train_x = sparse.hstack((train_x, train_a))
     test_x = sparse.hstack((test_x, test_a))
 print('cv prepared !')
+<<<<<<< HEAD
 # print('ths shape of train data:', test_x.shape)
 
 sparse.save_npz('./datasets/model_fea_add1_train.npz', train_x)
 sparse.save_npz('./datasets/model_fea_add1_test.npz', test_x)
+=======
+print('ths shape of train data:', test_x.shape)
+>>>>>>> 3574f7ab1708cc0224501270cb18b95c2e374ed1
 
 
 def LGB_predict(train_x, train_y, test_x, res):
