@@ -1,0 +1,5 @@
+1、去除了缺失率过高的特征: interest3, interest4, kw3, appIdInstall, appIdAction, topic3
+2、增加了广告点击率特征，每个广告推送给不同的用户数特征，推广计划转化率特征，用户所在LBS的历史点击率特征，n_estimators=8000
+3、min_df = 0.0009
+
+加的几个特征有一定的提升作用，但仍旧需要继续挖掘
