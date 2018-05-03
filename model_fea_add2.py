@@ -1,12 +1,3 @@
-# coding=utf-8
-# @author:walter000
-# github: https://github.com/Walter000/tencent_competition
-
-"""
- 训练数据中剔除了缺失率过高的特征: interest3, interest4, kw3, appIdInstall, appIdAction, topic3, 同时将除了ct(上网类型)之外的
- 特征进行相同的处理，额外增加了四个组合特征
-"""
-
 import numpy as np
 import pandas as pd
 import os
@@ -89,20 +80,21 @@ ratio_num_campaign = pd.DataFrame({
 data = pd.merge(data, ratio_num_campaign, on=['campaignId'], how='left')
 
 
-# 加入学历所对应转化率
+# 加入用户所在LBS的历史点击率
 
-print('开始加入学历所对应转化率特征')
-
-num_education = train['education'].value_counts().sort_index()
-num_education_clicked = data_clicked['education'].value_counts().sort_index()
-ration_num_education = num_education_clicked / num_education
-ration_num_education = pd.DataFrame({
-    'education': ration_num_education.index,
-    'ration_num_education' : ration_num_education.values
+print('开始加入加入用户所在LBS的历史点击率特征')
+num_lbs = train.groupby('LBS').uid.nunique()
+num_lbs_clicked = data_clicked.groupby('LBS').uid.nunique()
+ratio_num_lbs = num_lbs_clicked / num_lbs
+ratio_num_lbs = ratio_num_lbs.fillna(0)
+ratio_num_lbs = pd.DataFrame({
+    'LBS': ratio_num_lbs.index,
+    'ration_num_LBS' : ratio_num_lbs.values
 })
-data = pd.merge(data, ration_num_education, on=['education'], how='left')
+data = pd.merge(data, ratio_num_lbs, on=['LBS'], how='left')
 
 # 分离测试集
+data = data.fillna(0)
 train = data[data.label != -1]
 test = data[data.label == -1]
 res = test[['aid','uid']]
@@ -134,13 +126,9 @@ for i in ct_test:
 from sklearn.preprocessing import StandardScaler
 
 scaler = StandardScaler()
-scaler.fit(train[['ratio_clicked', 'num_advertise_touser', 'ratio_num_campaign',
-                          'ration_num_education']].values)
-train_x = scaler.transform(train[['ratio_clicked', 'num_advertise_touser', 'ratio_num_campaign',
-                                                  'ration_num_education']].values)
-
-test_x = scaler.transform(test[['ratio_clicked', 'num_advertise_touser', 'ratio_num_campaign',
-                                                  'ration_num_education']].values)
+scaler.fit(data[['ratio_clicked', 'num_advertise_touser', 'ratio_num_campaign', 'ration_num_LBS']].values)
+train_x = scaler.transform(train[['ratio_clicked', 'num_advertise_touser', 'ratio_num_campaign', 'ration_num_LBS']].values)
+test_x = scaler.transform(test[['ratio_clicked', 'num_advertise_touser', 'ratio_num_campaign', 'ration_num_LBS']].values)
 train_x = np.hstack((train_x, ct_trains))
 test_x = np.hstack((test_x, ct_tests))
 
@@ -159,7 +147,7 @@ print('one-hot prepared !')
 
 # 处理count特征向量
 
-ct_encoder = CountVectorizer(min_df=0.001)
+ct_encoder = CountVectorizer(min_df=0.0009)
 for feature in vector_feature:
     ct_encoder.fit(data[feature])
     train_a = ct_encoder.transform(train[feature])
@@ -169,8 +157,8 @@ for feature in vector_feature:
 print('cv prepared !')
 # print('ths shape of train data:', test_x.shape)
 
-sparse.save_npz('./datasets/model_fea_add1_train.npz', train_x)
-sparse.save_npz('./datasets/model_fea_add1_test.npz', test_x)
+sparse.save_npz('./datasets/model_fea_add2_train.npz', train_x)
+sparse.save_npz('./datasets/model_fea_add2_test.npz', test_x)
 
 
 def LGB_predict(train_x, train_y, test_x, res):
@@ -184,10 +172,10 @@ def LGB_predict(train_x, train_y, test_x, res):
     clf.fit(train_x, train_y, eval_set=[(train_x, train_y)], eval_metric='auc',early_stopping_rounds=100)
     res['score'] = clf.predict_proba(test_x)[:, 1]
     res['score'] = res['score'].apply(lambda x: float('%.6f' % x))
-    res.to_csv('./datasets/submission_model_fea_add1.csv', index=False)
+    res.to_csv('./datasets/submission_model_fea_add2.csv', index=False)
     return clf
 
 
 model = LGB_predict(train_x,train_y,test_x,res)
-joblib.dump(model, './datasets/model_fea_add1.model')
+joblib.dump(model, './datasets/model_fea_add2.model')
 
