@@ -56,7 +56,7 @@ print('first data interest1: ', train_interest[0][28])
 
 
 print('start train...')
-deepfm = DeepFm_padded.DeepFM(len(feature_size), feature_size, feature_size_interest, embedding_size=8, verbose=True, use_cuda=False, weight_decay=0.0001, use_fm=True,
+deepfm = DeepFm_padded.DeepFM(len(feature_size)+len(feature_size_interest), feature_size, feature_size_interest, embedding_size=8, verbose=True, use_cuda=False, weight_decay=0.0001, use_fm=True,
                        batch_size=1024, n_epochs=10, use_ffm=False, use_deep=True)
 deepfm.fit(train_index, train_values, train_interest, train_label,
            test_index, test_values, test_interest, test_label,  ealry_stopping=True, refit=True, save_path='./data')
