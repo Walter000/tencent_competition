@@ -422,7 +422,7 @@ class DeepFM(torch.nn.Module):
             y_train = np.concatenate((y_train, y_valid))
             x_size = x_size + x_valid_size
             # self.shuffle_in_unison_scary(Xi_train,Xv_train,y_train)
-            for epoch in range(epoch):
+            for epoch in range(self.n_epochs):
                 batch_iter = x_size // self.batch_size
                 for i in range(batch_iter + 1):
                     offset = i * self.batch_size
