@@ -5,6 +5,7 @@
 Reference:
 [1] DeepFM: A Factorization-Machine based Neural Network for CTR Prediction,
     Huifeng Guo, Ruiming Tang, Yunming Yey, Zhenguo Li, Xiuqiang He.
+@author: jachin,Nie
 说明： 在原作者代码基础上做了一点修改，主要是增加了interest类特征的embedding，数据预处理参考我的github
 """
 
