@@ -5,6 +5,7 @@
 Reference:
 [1] DeepFM: A Factorization-Machine based Neural Network for CTR Prediction,
     Huifeng Guo, Ruiming Tang, Yunming Yey, Zhenguo Li, Xiuqiang He.
+@author: jachin,Nie
 说明： 在原作者代码基础上做了一点修改，主要是增加了interest类特征的embedding，数据预处理参考我的github
 """
 
@@ -422,7 +423,7 @@ class DeepFM(torch.nn.Module):
             y_train = np.concatenate((y_train, y_valid))
             x_size = x_size + x_valid_size
             # self.shuffle_in_unison_scary(Xi_train,Xv_train,y_train)
-            for epoch in range(epoch):
+            for epoch in range(self.n_epochs):
                 batch_iter = x_size // self.batch_size
                 for i in range(batch_iter + 1):
                     offset = i * self.batch_size
